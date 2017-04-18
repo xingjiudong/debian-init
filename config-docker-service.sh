@@ -18,6 +18,3 @@ DOCKER_CONF_PATH=/etc/systemd/system/docker.service.d
 mkdir -p ${DOCKER_CONF_PATH}
 cp 20-docker.conf ${DOCKER_CONF_PATH}/20-docker.conf
 cp 10-wait-docker.conf ${DOCKER_CONF_PATH}/10-wait-docker.conf
-
-# Open 2375 port for docker service
-cp docker-tcp.socket /etc/systemd/system/docker-tcp.socket

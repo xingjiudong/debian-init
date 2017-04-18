@@ -1,0 +1,19 @@
+[Unit]
+Description=Advertise this node as a docker swarm manager
+Requires=docker.service etcd2.service
+After=docker.service etcd2.service
+[Service]
+ExecStartPre=-/usr/bin/docker kill %p
+ExecStartPre=-/usr/bin/docker rm -v %p
+ExecStart=/usr/bin/docker run --rm --name %p \
+    -p 9999:2375 \
+    swarm \
+    manage \
+    --replication \
+    --advertise={{PUBLIC_ADDR}}:9999 \
+    etcd://{{PUBLIC_ADDR}}:2379
+ExecStop=/usr/bin/docker stop %p
+Restart=always
+RestartSec=10s
+TimeoutStartSec=120
+TimeoutStopSec=15

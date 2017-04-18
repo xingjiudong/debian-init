@@ -11,7 +11,7 @@ sed -i "s#{{ETCD_DISCOVERY_URL}}#$ETCD_DISCOVERY#g" /etc/etcd2.env
 cp etcd2.service /etc/systemd/system/etcd2.service
 
 # Add DOCKER_OPTS into docker.service file
-sed -i "s#ExecStart=/usr/bin/dockerd#ExecStart=/usr/bin/dockerd \$DOCKER_OPTS#" /lib/systemd/system/docker.service
+sed -i "s#ExecStart=/usr/bin/dockerd -H fd://#ExecStart=/usr/bin/dockerd \$DOCKER_OPTS -H fd://#" /lib/systemd/system/docker.service
 
 # Copy docker service dropin file
 DOCKER_CONF_PATH=/etc/systemd/system/docker.service.d

@@ -67,5 +67,5 @@ write_files:
     content: |
       #!/bin/bash
       
-      export private_ipv4=$(ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)'）
+      export private_ipv4=$( ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)' ）
         

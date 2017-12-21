@@ -37,7 +37,7 @@ coreos:
         [Unit]
         Description=Set the etcd2-private_ipv4-env
         [Service]
-        ExecStart=export private_ipv4=$(ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)'
+        ExecStart=/srv/setup-etcd2-private_ipv4-env
     - name: etcd2.service
       command: start
       drop-ins:
@@ -60,4 +60,12 @@ coreos:
   locksmith:
     window-start: Fri 17:00
     window-length: 1h30
+write_files:
+  - path: /srv/setup-etcd2-private_ipv4-env
+    permissions: 0755
+    owner: root
+    content: |
+      #!/bin/bash
       
+      export private_ipv4=$(ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)'）
+        

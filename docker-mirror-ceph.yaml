@@ -31,13 +31,6 @@ coreos:
         Type=oneshot
         RemainAfterExit=yes
         ExecStart=/usr/bin/timedatectl set-timezone Asia/Shanghai
-    - name: setup-etcd2-private_ipv4-env.service
-      command: start
-      content: |
-        [Unit]
-        Description=Set the etcd2-private_ipv4-env
-        [Service]
-        ExecStart=source /srv/setup-etcd2-private_ipv4-env
     - name: etcd2.service
       command: start
       drop-ins:
@@ -49,7 +42,7 @@ coreos:
             [Service]
             EnvironmentFile=/etc/etcd2.env
   etcd2:
-    initial-advertise-peer-urls: http://$private_ipv4:2380
+    initial-advertise-peer-urls: http://$( ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)' ）:2380
     advertise-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
     listen-peer-urls: http://0.0.0.0:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
@@ -60,12 +53,3 @@ coreos:
   locksmith:
     window-start: Fri 17:00
     window-length: 1h30
-write_files:
-  - path: /srv/setup-etcd2-private_ipv4-env
-    permissions: 0755
-    owner: root
-    content: |
-      #!/bin/bash
-      
-      private_ipv4=$( ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)' ）
-        

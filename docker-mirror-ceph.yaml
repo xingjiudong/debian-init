@@ -37,12 +37,10 @@ coreos:
         - name: 30-discovery.conf
           content: |
             [Unit]
-            After=setup-etcd2-private_ipv4-env.service
-            Requires=setup-etcd2-private_ipv4-env.service
             [Service]
             EnvironmentFile=/etc/etcd2.env
   etcd2:
-    initial-advertise-peer-urls: http://$( ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)' ）:2380
+    initial-advertise-peer-urls: http://0.0.0.0:2380
     advertise-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
     listen-peer-urls: http://0.0.0.0:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001

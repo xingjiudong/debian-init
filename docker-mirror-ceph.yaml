@@ -31,12 +31,21 @@ coreos:
         Type=oneshot
         RemainAfterExit=yes
         ExecStart=/usr/bin/timedatectl set-timezone Asia/Shanghai
+    - name: setup-etcd2-private_ipv4-env.service
+      command: start
+      content: |
+        [Unit]
+        Description=Set the etcd2-private_ipv4-env
+        [Service]
+        ExecStart=export private_ipv4=$(ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)'
     - name: etcd2.service
       command: start
       drop-ins:
         - name: 30-discovery.conf
           content: |
             [Unit]
+            After=setup-etcd2-private_ipv4-env.service
+            Requires=setup-etcd2-private_ipv4-env.service
             [Service]
             EnvironmentFile=/etc/etcd2.env
   etcd2:
@@ -50,17 +59,5 @@ coreos:
     reboot-strategy: etcd-lock
   locksmith:
     window-start: Fri 17:00
-    window-length: 1h30m
-
-write_files:
-  - path: /srv/setup-etcd2-private_ipv4-env
-    permissions: 0755
-    owner: root
-    content: |
-      #!/usr/bin/env sh
-      ENV_FILE_PATH=/etc/etcd2.env
-      
-      private_ipv4=$(ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)')
-      
-      echo private_ipv4=${private_ipv4} >> ${ENV_FILE_PATH}
+    window-length: 1h30
       

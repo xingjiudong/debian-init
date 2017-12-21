@@ -51,3 +51,16 @@ coreos:
   locksmith:
     window-start: Fri 17:00
     window-length: 1h30m
+
+write_files:
+  - path: /srv/setup-etcd2-private_ipv4-env
+    permissions: 0755
+    owner: root
+    content: |
+      #!/usr/bin/env sh
+      ENV_FILE_PATH=/etc/etcd2.env
+      
+      private_ipv4=$(ip a | grep inet | grep eno1.211 | grep -v 127.0.0.1 | grep -v inet6 | awk '{print $2}' | awk '$0=substr($0,1,length($0)-3)')
+      
+      echo private_ipv4=${private_ipv4} >> ${ENV_FILE_PATH}
+      

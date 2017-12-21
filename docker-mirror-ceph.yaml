@@ -1,0 +1,53 @@
+#cloud-config
+users:
+  - name: core
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQD0b7/p6r/OB0ETmuWANndHdVlFzDA1vSD0ByO6/wbcwiz8265oWajfmCmrEhTEG6WMX5RQWZ2L/56Sb+MlcZQpZp77QKikgyqpfJdHuyq1bAIvfbl9Z8Ms1zYQMjdlOVbdNxQV7F3eMoh7bFIoXsDiatbPxEf8H9TkJI1UaPT1Gw== core@example.com
+coreos:
+  units:
+    - name: docker.socket
+      drop-ins:
+        - name: 20-tcp-listen-stream.conf
+          content: |
+            [Socket]
+            ListenStream=2375
+    - name: docker.service
+      drop-ins:
+        - name: 10-wait-docker.conf
+          content: |
+            [Unit]
+            After=docker.socket network.target etcd2.service
+            Requires=docker.socket etcd2.service
+        - name: 20-docker.conf
+          content: |
+            [Service]
+            Environment="DOCKER_OPTS=--log-driver=journald --cluster-store=etcd://localhost:2379 --cluster-advertise=ens192:2375 --registry-mirror=https://registry.docker-cn.com"
+    - name: settimezone.service
+      command: start
+      content: |
+        [Unit]
+        Description=Set the time zone
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStart=/usr/bin/timedatectl set-timezone Asia/Shanghai
+    - name: etcd2.service
+      command: start
+      drop-ins:
+        - name: 30-discovery.conf
+          content: |
+            [Unit]
+            [Service]
+            EnvironmentFile=/etc/etcd2.env
+  etcd2:
+    initial-advertise-peer-urls: http://$private_ipv4:2380
+    advertise-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
+    listen-peer-urls: http://0.0.0.0:2380
+    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+    heartbeat-interval: 500
+    election-timeout: 2500
+  update:
+    reboot-strategy: etcd-lock
+  locksmith:
+    window-start: Fri 17:00
+    window-length: 1h30m
